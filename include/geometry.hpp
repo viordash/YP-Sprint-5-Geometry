@@ -115,11 +115,18 @@ struct Triangle {
     //      - { b, c }
     //      - { c, a }
     //
-    Point2D Center() { return {}; }
-    std::array<Point2D, 3> Vertices() { return {a, b, c}; }
-    Lines2D<4> Lines() const { return {{a.x, b.x, c.x, a.x}, {a.y, b.y, c.y, a.y}}; }
 
-    /* ваш код здесь */
+    [[nodiscard]] double Area() const noexcept {
+        return 0.5 * std::abs(a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y));
+    }
+    [[nodiscard]] double Height() const noexcept { return BoundBox().Height(); }
+    [[nodiscard]] Point2D Center() const noexcept { return {(a.x + b.x + c.x) / 3.0, (a.y + b.y + c.y) / 3.0}; }
+    [[nodiscard]] BoundingBox BoundBox() const noexcept {
+        return {std::min({a.x, b.x, c.x}), std::min({a.y, b.y, c.y}), std::max({a.x, b.x, c.x}),
+                std::max({a.y, b.y, c.y})};
+    }
+    [[nodiscard]] std::array<Point2D, 3> Vertices() const noexcept { return {a, b, c}; }
+    [[nodiscard]] Lines2D<4> Lines() const noexcept { return {{a.x, b.x, c.x, a.x}, {a.y, b.y, c.y, a.y}}; }
 };
 
 struct Rectangle {
