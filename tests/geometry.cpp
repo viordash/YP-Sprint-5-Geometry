@@ -149,3 +149,76 @@ TEST(GeometryTest, Lines2DDyn_Front) {
     ASSERT_DOUBLE_EQ(lines.Front().x, 1.0);
     ASSERT_DOUBLE_EQ(lines.Front().y, 2.0);
 }
+
+TEST(GeometryTest, BoundingBox_Overlaps) {
+    BoundingBox bbox{1.0, 1.0, 5.0, 5.0};
+    BoundingBox bbox_complete_intersection{3.0, 3.0, 7.0, 7.0};
+    ASSERT_TRUE(bbox.Overlaps(bbox_complete_intersection));
+    ASSERT_TRUE(bbox_complete_intersection.Overlaps(bbox));
+
+    BoundingBox bbox_touching{5.0, 1.0, 7.0, 5.0};
+    ASSERT_TRUE(bbox.Overlaps(bbox_touching));
+    ASSERT_TRUE(bbox_touching.Overlaps(bbox));
+
+    BoundingBox bbox_wo_intersection{6.0, 6.0, 8.0, 8.0};
+    ASSERT_FALSE(bbox.Overlaps(bbox_wo_intersection));
+    ASSERT_FALSE(bbox_wo_intersection.Overlaps(bbox));
+
+    BoundingBox bbox_inside{2.0, 2.0, 4.0, 4.0};
+    ASSERT_TRUE(bbox.Overlaps(bbox_inside));
+    ASSERT_TRUE(bbox_inside.Overlaps(bbox));
+
+    BoundingBox bbox_neg0{-3.0, -3.0, -1.0, -1.0};
+    BoundingBox bbox_neg1{-2.0, -2.0, 0.0, 0.0};
+    ASSERT_TRUE(bbox_neg0.Overlaps(bbox_neg1));
+    ASSERT_TRUE(bbox_neg1.Overlaps(bbox_neg0));
+}
+
+TEST(GeometryTest, BoundingBox_Width) {
+    BoundingBox bbox{1.0, 2.0, 5.0, 6.0};
+    ASSERT_DOUBLE_EQ(bbox.Width(), 4.0);
+
+    BoundingBox bbox_zero_width{3.0, 2.0, 3.0, 6.0};
+    ASSERT_DOUBLE_EQ(bbox_zero_width.Width(), 0.0);
+
+    BoundingBox bbox_neg{-5.0, 2.0, -1.0, 6.0};
+    ASSERT_DOUBLE_EQ(bbox_neg.Width(), 4.0);
+}
+
+TEST(GeometryTest, BoundingBox_Height) {
+    BoundingBox bbox1{1.0, 2.0, 5.0, 6.0};
+    ASSERT_DOUBLE_EQ(bbox1.Height(), 4.0);
+
+    BoundingBox bbox_zero_height{1.0, 3.0, 5.0, 3.0};
+    ASSERT_DOUBLE_EQ(bbox_zero_height.Height(), 0.0);
+
+    BoundingBox bbox_neg{1.0, -6.0, 5.0, -2.0};
+    ASSERT_DOUBLE_EQ(bbox_neg.Height(), 4.0);
+}
+
+TEST(GeometryTest, BoundingBox_Center) {
+    BoundingBox bbox{1.0, 2.0, 5.0, 6.0};
+    Point2D center = bbox.Center();
+    ASSERT_DOUBLE_EQ(center.x, 3.0);
+    ASSERT_DOUBLE_EQ(center.y, 4.0);
+
+    BoundingBox bbox_neg{-5.0, -6.0, -1.0, -2.0};
+    center = bbox_neg.Center();
+    ASSERT_DOUBLE_EQ(center.x, -3.0);
+    ASSERT_DOUBLE_EQ(center.y, -4.0);
+
+    BoundingBox bbox_zero{3.0, 3.0, 3.0, 3.0};
+    center = bbox_zero.Center();
+    ASSERT_DOUBLE_EQ(center.x, 3.0);
+    ASSERT_DOUBLE_EQ(center.y, 3.0);
+}
+
+TEST(GeometryTest, BoundingBox_with_number_limits) {
+    BoundingBox bbox_huge{0.0, 0.0, std::numeric_limits<double>::max(), std::numeric_limits<double>::max()};
+    ASSERT_TRUE(std::isinf(bbox_huge.Width()) || bbox_huge.Width() == std::numeric_limits<double>::max());
+    ASSERT_TRUE(std::isinf(bbox_huge.Height()) || bbox_huge.Height() == std::numeric_limits<double>::max());
+
+    BoundingBox bbox_inf{0.0, 0.0, std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity()};
+    ASSERT_TRUE(std::isinf(bbox_inf.Width()));
+    ASSERT_TRUE(std::isinf(bbox_inf.Height()));
+}
