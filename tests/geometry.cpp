@@ -364,3 +364,137 @@ TEST(GeometryTest, Line_with_number_limits) {
     Line line_inf{{0.0, 0.0}, {std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity()}};
     ASSERT_TRUE(std::isinf(line_inf.Length()));
 }
+
+TEST(GeometryTest, Triangle_ctor) {
+    Point2D a(0.0, 0.0);
+    Point2D b(3.0, 0.0);
+    Point2D c(0.0, 4.0);
+    Triangle triangle{a, b, c};
+
+    ASSERT_DOUBLE_EQ(triangle.a.x, 0.0);
+    ASSERT_DOUBLE_EQ(triangle.a.y, 0.0);
+    ASSERT_DOUBLE_EQ(triangle.b.x, 3.0);
+    ASSERT_DOUBLE_EQ(triangle.b.y, 0.0);
+    ASSERT_DOUBLE_EQ(triangle.c.x, 0.0);
+    ASSERT_DOUBLE_EQ(triangle.c.y, 4.0);
+}
+
+TEST(GeometryTest, Triangle_Area) {
+    Triangle right_triangle{{0.0, 0.0}, {3.0, 0.0}, {0.0, 4.0}};
+    ASSERT_DOUBLE_EQ(right_triangle.Area(), 6.0);
+
+    Triangle common_triangle{{1.0, 1.0}, {4.0, 1.0}, {2.0, 5.0}};
+    ASSERT_DOUBLE_EQ(common_triangle.Area(), 6.0);
+
+    Triangle line_triangle{{0.0, 0.0}, {2.0, 2.0}, {4.0, 4.0}};
+    ASSERT_DOUBLE_EQ(line_triangle.Area(), 0.0);
+
+    Triangle triangle_neg{{-1.0, -1.0}, {-4.0, -1.0}, {-2.0, -5.0}};
+    ASSERT_DOUBLE_EQ(triangle_neg.Area(), 6.0);
+
+    Triangle triangle_back_order{{0.0, 4.0}, {3.0, 0.0}, {0.0, 0.0}};
+    ASSERT_DOUBLE_EQ(triangle_back_order.Area(), 6.0);
+}
+
+TEST(GeometryTest, Triangle_Height) {
+    Triangle right_triangle{{0.0, 0.0}, {3.0, 0.0}, {0.0, 4.0}};
+    ASSERT_DOUBLE_EQ(right_triangle.Height(), 4.0);
+
+    Triangle triangle_horz{{0.0, 2.0}, {3.0, 2.0}, {1.5, 2.0}};
+    ASSERT_DOUBLE_EQ(triangle_horz.Height(), 0.0);
+
+    Triangle triangle_vert{{2.0, 0.0}, {2.0, 3.0}, {2.0, 5.0}};
+    ASSERT_DOUBLE_EQ(triangle_vert.Height(), 5.0);
+
+    Triangle triangle_neg{{-1.0, -5.0}, {-3.0, -1.0}, {-2.0, -3.0}};
+    ASSERT_DOUBLE_EQ(triangle_neg.Height(), 4.0);  // -1 - (-5) = 4
+}
+
+TEST(GeometryTest, Triangle_Center) {
+    Triangle right_triangle{{0.0, 0.0}, {3.0, 0.0}, {0.0, 4.0}};
+    Point2D right_triangle_center = right_triangle.Center();
+    ASSERT_DOUBLE_EQ(right_triangle_center.x, 1.0);
+    ASSERT_DOUBLE_EQ(right_triangle_center.y, 4.0 / 3.0);
+
+    Triangle equilateral_triangle{{0.0, 0.0}, {4.0, 0.0}, {2.0, 3.464}};
+    Point2D equilateral_triangle_center = equilateral_triangle.Center();
+    ASSERT_NEAR(equilateral_triangle_center.x, 2.0, 1e-3);
+    ASSERT_NEAR(equilateral_triangle_center.y, 1.155, 1e-3);
+
+    Triangle triangle_neg{{-1.0, -2.0}, {-3.0, -4.0}, {-5.0, -6.0}};
+    Point2D triangle_neg_center = triangle_neg.Center();
+    ASSERT_DOUBLE_EQ(triangle_neg_center.x, -3.0);
+    ASSERT_DOUBLE_EQ(triangle_neg_center.y, -4.0);
+}
+
+TEST(GeometryTest, Triangle_BoundBox) {
+    Triangle right_triangle{{0.0, 0.0}, {3.0, 0.0}, {0.0, 4.0}};
+    BoundingBox right_triangle_bbox = right_triangle.BoundBox();
+    ASSERT_DOUBLE_EQ(right_triangle_bbox.min_x, 0.0);
+    ASSERT_DOUBLE_EQ(right_triangle_bbox.min_y, 0.0);
+    ASSERT_DOUBLE_EQ(right_triangle_bbox.max_x, 3.0);
+    ASSERT_DOUBLE_EQ(right_triangle_bbox.max_y, 4.0);
+
+    Triangle triangle_neg{{-1.0, -2.0}, {-3.0, 1.0}, {2.0, -5.0}};
+    BoundingBox triangle_neg_bbox = triangle_neg.BoundBox();
+    ASSERT_DOUBLE_EQ(triangle_neg_bbox.min_x, -3.0);
+    ASSERT_DOUBLE_EQ(triangle_neg_bbox.min_y, -5.0);
+    ASSERT_DOUBLE_EQ(triangle_neg_bbox.max_x, 2.0);
+    ASSERT_DOUBLE_EQ(triangle_neg_bbox.max_y, 1.0);
+
+    Triangle point_triangle{{1.0, 2.0}, {1.0, 2.0}, {1.0, 2.0}};
+    BoundingBox point_triangle_bbox = point_triangle.BoundBox();
+    ASSERT_DOUBLE_EQ(point_triangle_bbox.min_x, 1.0);
+    ASSERT_DOUBLE_EQ(point_triangle_bbox.min_y, 2.0);
+    ASSERT_DOUBLE_EQ(point_triangle_bbox.max_x, 1.0);
+    ASSERT_DOUBLE_EQ(point_triangle_bbox.max_y, 2.0);
+}
+
+TEST(GeometryTest, Triangle_Vertices) {
+    Point2D a(0.0, 0.0);
+    Point2D b(3.0, 0.0);
+    Point2D c(0.0, 4.0);
+    Triangle triangle{a, b, c};
+
+    auto vertices = triangle.Vertices();
+
+    ASSERT_EQ(vertices.size(), 3);
+    ASSERT_DOUBLE_EQ(vertices[0].x, 0.0);
+    ASSERT_DOUBLE_EQ(vertices[0].y, 0.0);
+    ASSERT_DOUBLE_EQ(vertices[1].x, 3.0);
+    ASSERT_DOUBLE_EQ(vertices[1].y, 0.0);
+    ASSERT_DOUBLE_EQ(vertices[2].x, 0.0);
+    ASSERT_DOUBLE_EQ(vertices[2].y, 4.0);
+}
+
+TEST(GeometryTest, Triangle_Lines) {
+    Point2D a(0.0, 0.0);
+    Point2D b(3.0, 0.0);
+    Point2D c(0.0, 4.0);
+    Triangle triangle{a, b, c};
+
+    auto lines = triangle.Lines();
+
+    ASSERT_EQ(lines.x.size(), 4);
+    ASSERT_EQ(lines.y.size(), 4);
+
+    ASSERT_DOUBLE_EQ(lines.x[0], 0.0);
+    ASSERT_DOUBLE_EQ(lines.y[0], 0.0);
+    ASSERT_DOUBLE_EQ(lines.x[1], 3.0);
+    ASSERT_DOUBLE_EQ(lines.y[1], 0.0);
+    ASSERT_DOUBLE_EQ(lines.x[2], 0.0);
+    ASSERT_DOUBLE_EQ(lines.y[2], 4.0);
+
+    ASSERT_DOUBLE_EQ(lines.x[3], 0.0);
+    ASSERT_DOUBLE_EQ(lines.y[3], 0.0);
+}
+
+TEST(GeometryTest, Triangle_with_number_limits) {
+    Triangle triangle_huge{
+        {0.0, 0.0}, {std::numeric_limits<double>::max(), 0.0}, {0.0, std::numeric_limits<double>::max()}};
+    ASSERT_TRUE(std::isinf(triangle_huge.Area()));
+
+    Triangle triangle_inf{
+        {0.0, 0.0}, {std::numeric_limits<double>::infinity(), 0.0}, {0.0, std::numeric_limits<double>::infinity()}};
+    ASSERT_TRUE(std::isnan(triangle_inf.Area()));
+}
