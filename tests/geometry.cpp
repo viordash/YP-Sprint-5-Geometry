@@ -222,3 +222,145 @@ TEST(GeometryTest, BoundingBox_with_number_limits) {
     ASSERT_TRUE(std::isinf(bbox_inf.Width()));
     ASSERT_TRUE(std::isinf(bbox_inf.Height()));
 }
+
+TEST(GeometryTest, Line_ctor) {
+    Point2D start(1.0, 2.0);
+    Point2D end(4.0, 6.0);
+    Line line{start, end};
+
+    ASSERT_DOUBLE_EQ(line.start.x, 1.0);
+    ASSERT_DOUBLE_EQ(line.start.y, 2.0);
+    ASSERT_DOUBLE_EQ(line.end.x, 4.0);
+    ASSERT_DOUBLE_EQ(line.end.y, 6.0);
+}
+
+TEST(GeometryTest, Line_Length) {
+    Line line_normal{{1.0, 2.0}, {4.0, 6.0}};
+    ASSERT_DOUBLE_EQ(line_normal.Length(), 5.0);  // √((4-1)² + (6-2)²) = 5
+
+    Line line_horz{{1.0, 2.0}, {5.0, 2.0}};
+    ASSERT_DOUBLE_EQ(line_horz.Length(), 4.0);
+
+    Line line_vert{{1.0, 2.0}, {1.0, 6.0}};
+    ASSERT_DOUBLE_EQ(line_vert.Length(), 4.0);
+
+    Line line_point{{3.0, 4.0}, {3.0, 4.0}};
+    ASSERT_DOUBLE_EQ(line_point.Length(), 0.0);
+
+    Line line_neg{{-1.0, -2.0}, {-4.0, -6.0}};
+    ASSERT_DOUBLE_EQ(line_neg.Length(), 5.0);
+}
+
+TEST(GeometryTest, Line_Direction) {
+    Line line_normal{{1.0, 2.0}, {4.0, 6.0}};
+    Point2D dir_normal = line_normal.Direction();
+    ASSERT_DOUBLE_EQ(dir_normal.x, 0.6);
+    ASSERT_DOUBLE_EQ(dir_normal.y, 0.8);
+    ASSERT_DOUBLE_EQ(dir_normal.Length(), 1.0);
+
+    Line line_horz{{1.0, 2.0}, {5.0, 2.0}};
+    Point2D dir_horz = line_horz.Direction();
+    ASSERT_DOUBLE_EQ(dir_horz.x, 1.0);
+    ASSERT_DOUBLE_EQ(dir_horz.y, 0.0);
+
+    Line line_vert{{1.0, 2.0}, {1.0, 6.0}};
+    Point2D dir_vert = line_vert.Direction();
+    ASSERT_DOUBLE_EQ(dir_vert.x, 0.0);
+    ASSERT_DOUBLE_EQ(dir_vert.y, 1.0);
+
+    Line line_point{{3.0, 4.0}, {3.0, 4.0}};
+    Point2D dir_point = line_point.Direction();
+    ASSERT_DOUBLE_EQ(dir_point.x, 0.0);
+    ASSERT_DOUBLE_EQ(dir_point.y, 0.0);
+}
+
+TEST(GeometryTest, Line_BoundBox) {
+    Line line_normal{{1.0, 2.0}, {4.0, 6.0}};
+    BoundingBox bbox_normal = line_normal.BoundBox();
+    ASSERT_DOUBLE_EQ(bbox_normal.min_x, 1.0);
+    ASSERT_DOUBLE_EQ(bbox_normal.min_y, 2.0);
+    ASSERT_DOUBLE_EQ(bbox_normal.max_x, 4.0);
+    ASSERT_DOUBLE_EQ(bbox_normal.max_y, 6.0);
+
+    Line line_back_order{{4.0, 6.0}, {1.0, 2.0}};
+    BoundingBox bbox_back_order = line_back_order.BoundBox();
+    ASSERT_DOUBLE_EQ(bbox_back_order.min_x, 1.0);
+    ASSERT_DOUBLE_EQ(bbox_back_order.min_y, 2.0);
+    ASSERT_DOUBLE_EQ(bbox_back_order.max_x, 4.0);
+    ASSERT_DOUBLE_EQ(bbox_back_order.max_y, 6.0);
+
+    Line line_neg{{-1.0, -2.0}, {-4.0, -6.0}};
+    BoundingBox bbox_neg = line_neg.BoundBox();
+    ASSERT_DOUBLE_EQ(bbox_neg.min_x, -4.0);
+    ASSERT_DOUBLE_EQ(bbox_neg.min_y, -6.0);
+    ASSERT_DOUBLE_EQ(bbox_neg.max_x, -1.0);
+    ASSERT_DOUBLE_EQ(bbox_neg.max_y, -2.0);
+}
+
+TEST(GeometryTest, Line_Height) {
+    Line line_normal{{1.0, 2.0}, {4.0, 6.0}};
+    ASSERT_DOUBLE_EQ(line_normal.Height(), 4.0);
+
+    Line line_horz{{1.0, 2.0}, {5.0, 2.0}};
+    ASSERT_DOUBLE_EQ(line_horz.Height(), 0.0);
+
+    Line line_vert{{1.0, 2.0}, {1.0, 6.0}};
+    ASSERT_DOUBLE_EQ(line_vert.Height(), 4.0);
+
+    Line line_neg{{-1.0, -2.0}, {-4.0, -6.0}};
+    ASSERT_DOUBLE_EQ(line_neg.Height(), 4.0);
+}
+
+TEST(GeometryTest, Line_Center) {
+    Line line_normal{{1.0, 2.0}, {4.0, 6.0}};
+    Point2D center_normal = line_normal.Center();
+    ASSERT_DOUBLE_EQ(center_normal.x, 2.5);
+    ASSERT_DOUBLE_EQ(center_normal.y, 4.0);
+
+    Line line_horz{{1.0, 2.0}, {5.0, 2.0}};
+    Point2D center_horz = line_horz.Center();
+    ASSERT_DOUBLE_EQ(center_horz.x, 3.0);
+    ASSERT_DOUBLE_EQ(center_horz.y, 2.0);
+
+    Line line_vert{{1.0, 2.0}, {1.0, 6.0}};
+    Point2D center_vert = line_vert.Center();
+    ASSERT_DOUBLE_EQ(center_vert.x, 1.0);
+    ASSERT_DOUBLE_EQ(center_vert.y, 4.0);
+
+    Line line_neg{{-1.0, -2.0}, {-4.0, -6.0}};
+    Point2D center_neg = line_neg.Center();
+    ASSERT_DOUBLE_EQ(center_neg.x, -2.5);
+    ASSERT_DOUBLE_EQ(center_neg.y, -4.0);
+}
+
+TEST(GeometryTest, Line_Vertices) {
+    Line line{{1.0, 2.0}, {4.0, 6.0}};
+    auto vertices = line.Vertices();
+
+    ASSERT_EQ(vertices.size(), 2);
+    ASSERT_DOUBLE_EQ(vertices[0].x, 1.0);
+    ASSERT_DOUBLE_EQ(vertices[0].y, 2.0);
+    ASSERT_DOUBLE_EQ(vertices[1].x, 4.0);
+    ASSERT_DOUBLE_EQ(vertices[1].y, 6.0);
+}
+
+TEST(GeometryTest, Line_Lines) {
+    Line line{{1.0, 2.0}, {4.0, 6.0}};
+    auto lines = line.Lines();
+
+    ASSERT_EQ(lines.x.size(), 2);
+    ASSERT_EQ(lines.y.size(), 2);
+
+    ASSERT_DOUBLE_EQ(lines.x[0], 1.0);
+    ASSERT_DOUBLE_EQ(lines.y[0], 2.0);
+    ASSERT_DOUBLE_EQ(lines.x[1], 4.0);
+    ASSERT_DOUBLE_EQ(lines.y[1], 6.0);
+}
+
+TEST(GeometryTest, Line_with_number_limits) {
+    Line line_huge{{0.0, 0.0}, {std::numeric_limits<double>::max(), std::numeric_limits<double>::max()}};
+    ASSERT_TRUE(std::isinf(line_huge.Length()) || line_huge.Length() == std::numeric_limits<double>::max());
+
+    Line line_inf{{0.0, 0.0}, {std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity()}};
+    ASSERT_TRUE(std::isinf(line_inf.Length()));
+}
