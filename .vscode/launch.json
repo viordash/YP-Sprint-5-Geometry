@@ -14,6 +14,18 @@
             "cwd": "${workspaceFolder}/build",
             "preLaunchTask": "GCC: Build Debug app",
             "initCommands": ["settings set target.disable-aslr false"]
+        },
+
+        {
+            "type": "lldb",
+            "request": "launch tests",
+            "name": "Launch GeometryApp",
+            "program": "${workspaceFolder}/build/GeometryApp_tests",
+            "args": [
+            ],
+            "cwd": "${workspaceFolder}/build",
+            "preLaunchTask": "GCC: Build Debug app",
+            "initCommands": ["settings set target.disable-aslr false"]
         }
     ]
 }
