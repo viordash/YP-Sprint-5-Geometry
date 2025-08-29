@@ -11,6 +11,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     add_compile_options(-fmax-errors=1)
 endif()
 
+add_compile_options(-Wno-deprecated-declarations)
+
 # Ищем необходимые библиотеки
 find_package(GTest REQUIRED)
 
