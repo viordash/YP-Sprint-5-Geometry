@@ -79,7 +79,13 @@ struct Lines2DDyn {
 struct BoundingBox {
     double min_x, min_y, max_x, max_y;
 
-    /* ваш код здесь */
+    [[nodiscard]] constexpr bool Overlaps(const BoundingBox &other) const noexcept {
+        return max_x >= other.min_x && min_x <= other.max_x && max_y >= other.min_y && min_y <= other.max_y;
+    }
+
+    [[nodiscard]] constexpr double Width() const noexcept { return max_x - min_x; }
+    [[nodiscard]] constexpr double Height() const noexcept { return max_y - min_y; }
+    [[nodiscard]] constexpr Point2D Center() const noexcept { return {(min_x + max_x) / 2, (min_y + max_y) / 2}; }
 };
 
 struct Line {
