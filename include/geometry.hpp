@@ -135,10 +135,24 @@ struct Rectangle {
     Point2D bottom_left;
     double width, height;
 
-    /* ваш код здесь */
-    Point2D Center() { return {}; }
-    std::array<Point2D, 1> Vertices() { return {}; }
-    Lines2D<1> Lines() const { return {}; }
+    [[nodiscard]] double Area() const noexcept { return width * height; }
+    [[nodiscard]] double Height() const noexcept { return height; }
+    [[nodiscard]] Point2D Center() const noexcept {
+        return {bottom_left.x + width / 2.0, bottom_left.y + height / 2.0};
+    }
+    [[nodiscard]] BoundingBox BoundBox() const noexcept {
+        return {bottom_left.x, bottom_left.y, bottom_left.x + width, bottom_left.y + height};
+    }
+    [[nodiscard]] std::array<Point2D, 4> Vertices() const noexcept {
+        return {bottom_left,
+                {bottom_left.x + width, bottom_left.y},
+                {bottom_left.x + width, bottom_left.y + height},
+                {bottom_left.x, bottom_left.y + height}};
+    }
+    [[nodiscard]] Lines2D<5> Lines() const noexcept {
+        return {{bottom_left.x, bottom_left.x + width, bottom_left.x + width, bottom_left.x, bottom_left.x},
+                {bottom_left.y, bottom_left.y, bottom_left.y + height, bottom_left.y + height, bottom_left.y}};
+    }
 };
 
 struct RegularPolygon {
