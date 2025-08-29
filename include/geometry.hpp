@@ -20,26 +20,32 @@ namespace geometry {
 struct Point2D {
     double x, y;
 
-    constexpr Point2D() : x(0), y(0) {}
-    constexpr Point2D(double x, double y) : x(x), y(y) {}
+    constexpr Point2D() noexcept : x(0), y(0) {}
+    constexpr Point2D(double x, double y) noexcept : x(x), y(y) {}
 
     // Comparison
-    bool operator<(const Point2D &other) { return x < other.x && y < other.y; }
-    bool operator==(const Point2D &other) { return x == other.x && y == other.y; }
+    [[nodiscard]] constexpr bool operator<(const Point2D &other) const noexcept { return x < other.x && y < other.y; }
+    [[nodiscard]] constexpr bool operator==(const Point2D &other) const noexcept {
+        return x == other.x && y == other.y;
+    }
 
     // Binary math operators
-    Point2D operator+(const Point2D &other) { return {x + other.x, y + other.y}; }
-    Point2D operator-(const Point2D &other) { return {x - other.x, y - other.y}; }
-    Point2D operator*(double value) { return {x * value, y * value}; }
-    Point2D operator/(double value) { return {x / value, y / value}; }
+    [[nodiscard]] constexpr Point2D operator+(const Point2D &other) const noexcept {
+        return {x + other.x, y + other.y};
+    }
+    [[nodiscard]] constexpr Point2D operator-(const Point2D &other) const noexcept {
+        return {x - other.x, y - other.y};
+    }
+    [[nodiscard]] constexpr Point2D operator*(double value) const noexcept { return {x * value, y * value}; }
+    [[nodiscard]] constexpr Point2D operator/(double value) const noexcept { return {x / value, y / value}; }
 
     // Binary geometry operations
-    double Dot(const Point2D &other) { return x * other.x + y * other.y; }
-    double Cross(const Point2D &other) { return x * other.y - y * other.x; }
-    double Length() { return std::sqrt(x * x + y * y); }
-    double DistanceTo(const Point2D &other) { return (*this - other).Length(); }
+    [[nodiscard]] constexpr double Dot(const Point2D &other) const noexcept { return x * other.x + y * other.y; }
+    [[nodiscard]] constexpr double Cross(const Point2D &other) const noexcept { return x * other.y - y * other.x; }
+    [[nodiscard]] double Length() const noexcept { return std::sqrt(x * x + y * y); }
+    [[nodiscard]] double DistanceTo(const Point2D &other) const noexcept { return (*this - other).Length(); }
 
-    Point2D Normalize() {
+    [[nodiscard]] Point2D Normalize() const noexcept {
         const double len = Length();
         return len > 0 ? Point2D{x / len, y / len} : Point2D{0, 0};
     }
