@@ -107,3 +107,45 @@ TEST(GeometryTest, Point2D_Normalize) {
     ASSERT_DOUBLE_EQ(zero_normalized.x, 0.0);
     ASSERT_DOUBLE_EQ(zero_normalized.y, 0.0);
 }
+
+TEST(GeometryTest, Lines2DDyn_ctor) {
+    Lines2DDyn lines;
+
+    ASSERT_TRUE(lines.x.empty());
+    ASSERT_TRUE(lines.y.empty());
+}
+
+TEST(GeometryTest, Lines2DDyn_Reserve) {
+    Lines2DDyn lines;
+    lines.Reserve(10);
+
+    ASSERT_GE(lines.x.capacity(), 10);
+    ASSERT_GE(lines.y.capacity(), 10);
+    ASSERT_TRUE(lines.x.empty());
+    ASSERT_TRUE(lines.y.empty());
+}
+
+TEST(GeometryTest, Lines2DDyn_PushBack) {
+    Lines2DDyn lines;
+    Point2D point(1.0, 2.0);
+
+    lines.PushBack(point);
+    lines.PushBack(3.0, 4.0);
+
+    ASSERT_EQ(lines.x.size(), 2);
+    ASSERT_EQ(lines.y.size(), 2);
+    ASSERT_DOUBLE_EQ(lines.x[0], 1.0);
+    ASSERT_DOUBLE_EQ(lines.y[0], 2.0);
+    ASSERT_DOUBLE_EQ(lines.x[1], 3.0);
+    ASSERT_DOUBLE_EQ(lines.y[1], 4.0);
+}
+
+TEST(GeometryTest, Lines2DDyn_Front) {
+    Lines2DDyn lines;
+
+    lines.PushBack(1.0, 2.0);
+    lines.PushBack(3.0, 4.0);
+
+    ASSERT_DOUBLE_EQ(lines.Front().x, 1.0);
+    ASSERT_DOUBLE_EQ(lines.Front().y, 2.0);
+}
