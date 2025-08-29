@@ -91,11 +91,15 @@ struct BoundingBox {
 struct Line {
     Point2D start, end;
 
-    /* ваш код здесь */
-
-    Point2D Center() { return {}; }
-    std::array<Point2D, 2> Vertices() { return {Point2D{start.x, start.y}, {end.x, end.y}}; }
-    Lines2D<2> Lines() const { return {{start.x, end.x}, {start.y, end.y}}; }
+    [[nodiscard]] double Length() const noexcept { return start.DistanceTo(end); }
+    [[nodiscard]] Point2D Direction() const noexcept { return (end - start).Normalize(); }
+    [[nodiscard]] BoundingBox BoundBox() const noexcept {
+        return {std::min(start.x, end.x), std::min(start.y, end.y), std::max(start.x, end.x), std::max(start.y, end.y)};
+    }
+    [[nodiscard]] double Height() const noexcept { return BoundBox().Height(); }
+    [[nodiscard]] Point2D Center() const noexcept { return (start + end) / 2.0; }
+    [[nodiscard]] std::array<Point2D, 2> Vertices() const noexcept { return {start, end}; }
+    [[nodiscard]] Lines2D<2> Lines() const noexcept { return {{start.x, end.x}, {start.y, end.y}}; }
 };
 
 struct Triangle {
