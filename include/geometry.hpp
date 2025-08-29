@@ -61,19 +61,19 @@ struct Lines2DDyn {
     std::vector<double> x;
     std::vector<double> y;
 
-    void Reserve(size_t n) {
+    void Reserve(size_t n) noexcept {
         x.reserve(n);
         y.reserve(n);
     }
-    void PushBack(Point2D p) {
+    void PushBack(Point2D p) noexcept {
         x.push_back(p.x);
         y.push_back(p.y);
     }
-    void PushBack(double px, double py) {
+    void PushBack(double px, double py) noexcept {
         x.push_back(px);
         y.push_back(py);
     }
-    Point2D Front() { return {x.front(), y.front()}; }
+    [[nodiscard]] Point2D Front() const noexcept { return {x.front(), y.front()}; }
 };
 
 struct BoundingBox {
