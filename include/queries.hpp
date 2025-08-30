@@ -2,6 +2,7 @@
 #include "geometry.hpp"
 #include <algorithm>
 #include <optional>
+#include <ranges>
 #include <variant>
 
 namespace geometry::queries {
@@ -10,6 +11,9 @@ template <class... Ts>
 struct Multilambda : Ts... {
     using Ts::operator()...;
 };
+
+template <typename T>
+concept IsPolygonOrRegularPolygon = std::is_same_v<T, geometry::Polygon> || std::is_same_v<T, geometry::RegularPolygon>;
 
 /*
  * Класс для поиска расстояния от точки до фигуры
@@ -21,9 +25,71 @@ struct PointToShapeDistanceVisitor {
 
     explicit PointToShapeDistanceVisitor(const Point2D &p) : point(p) {}
 
-    /* ваш код здесь */
-};
+    [[nodiscard]] double operator()(const Line &line) const {
+        const Point2D ab = line.end - line.start;
+        const Point2D ap = point - line.start;
 
+        bool line_is_point = ab.Dot(ab) < 1e-9;
+        if (line_is_point) {
+            return ap.Length();
+        }
+
+        double projection = ap.Dot(ab) / ab.Dot(ab);
+        projection = std::clamp(projection, 0.0, 1.0);
+
+        const Point2D nearest_point = line.start + ab * projection;
+        return point.DistanceTo(nearest_point);
+    }
+
+    [[nodiscard]] double operator()(const Circle &circle) const {
+        const double dist_to_center = point.DistanceTo(circle.center_p);
+        const double dist = dist_to_center - circle.radius;
+        bool inside = dist < 0.0;
+        if (inside) {
+            return 0.0;
+        }
+        return dist;
+    }
+
+    [[nodiscard]] double operator()(const Rectangle &rect) const {
+        const double nearest_x = std::clamp(point.x, rect.bottom_left.x, rect.bottom_left.x + rect.width);
+        const double nearest_y = std::clamp(point.y, rect.bottom_left.y, rect.bottom_left.y + rect.height);
+
+        return point.DistanceTo({nearest_x, nearest_y});
+    }
+
+    [[nodiscard]] double operator()(const Triangle &triangle) const {
+        const double c1 = (point - triangle.a).Cross(triangle.b - triangle.a);
+        const double c2 = (point - triangle.b).Cross(triangle.c - triangle.b);
+        const double c3 = (point - triangle.c).Cross(triangle.a - triangle.c);
+
+        bool inside = (c1 >= 0 && c2 >= 0 && c3 >= 0) || (c1 <= 0 && c2 <= 0 && c3 <= 0);
+        if (inside) {
+            return 0.0;
+        }
+
+        const double dist_ab = (*this)(Line{triangle.a, triangle.b});
+        const double dist_bc = (*this)(Line{triangle.b, triangle.c});
+        const double dist_ca = (*this)(Line{triangle.c, triangle.a});
+
+        return std::min({dist_ab, dist_bc, dist_ca});
+    }
+
+    template <IsPolygonOrRegularPolygon PolygonType>
+    [[nodiscard]] double operator()(const PolygonType &poly) const {
+        const auto poly_lines = poly.Lines();
+        const auto &x_coords = poly_lines.x;
+        const auto &y_coords = poly_lines.y;
+
+        auto dist_to_edges = std::views::iota(0u, x_coords.size() - 1)  //
+                             | std::views::transform([&, this](size_t i) {
+                                   Line edge{{x_coords[i], y_coords[i]}, {x_coords[i + 1], y_coords[i + 1]}};
+                                   return (*this)(edge);  // Вычисляем расстояние от `point` до этого ребра
+                               });
+
+        return std::ranges::min(dist_to_edges);
+    }
+};
 /*
  * Класс для поиска расстояния между двумя фигурами
  *
@@ -45,9 +111,7 @@ struct ShapeToShapeDistanceVisitor {
  * Функции-помощники
  */
 inline double DistanceToPoint(const Shape &shape, const Point2D &point) {
-
-    /* ваш код здесь */
-    return 0.0;
+    return std::visit(PointToShapeDistanceVisitor{point}, shape);
 }
 
 inline BoundingBox GetBoundBox(const Shape &shape) {
