@@ -1,5 +1,6 @@
 #pragma once
 #include "geometry.hpp"
+#include "intersections.hpp"
 #include <algorithm>
 #include <optional>
 #include <ranges>
@@ -103,8 +104,24 @@ struct PointToShapeDistanceVisitor {
  * Для всех остальных требуется вернуть пустое значение
  */
 struct ShapeToShapeDistanceVisitor {
+    [[nodiscard]] std::optional<double> operator()(const Circle &circle1, const Circle &circle2) const {
+        PointToShapeDistanceVisitor p_visitor{circle1.center_p};
+        return std::max(p_visitor(circle2) - circle1.radius, 0.0);
+    }
 
-    /* ваш код здесь */
+    [[nodiscard]] std::optional<double> operator()(const Line &line1, const Line &line2) const {
+        auto start1_line2 = PointToShapeDistanceVisitor{line1.start}(line2);
+        auto end1_line2 = PointToShapeDistanceVisitor{line1.end}(line2);
+        auto start2_line1 = PointToShapeDistanceVisitor{line2.start}(line1);
+        auto end2_line1 = PointToShapeDistanceVisitor{line2.end}(line1);
+
+        return std::min({start1_line2, end1_line2, start2_line1, end2_line1});
+    }
+
+    template <typename T, typename U>
+    [[nodiscard]] std::optional<double> operator()(const T &, const U &) const {
+        return std::nullopt;
+    }
 };
 
 /*
@@ -132,10 +149,18 @@ inline bool BoundingBoxesOverlap(const Shape &shape1, const Shape &shape2) {
     return false;
 }
 
-std::optional<double> DistanceBetweenShapes(const Shape &shape1, const Shape &shape2) {
+inline std::optional<double> DistanceBetweenShapes(const Shape &shape1, const Shape &shape2) {
+    if (intersections::GetIntersectPoint(shape1, shape2).has_value()) {
+        return 0.0;
+    }
 
-    /* ваш код с ShapeToShapeDistanceVisitor здесь*/
-    return std::nullopt;
+    auto visitor = Multilambda{
+        [](const Line &line1, const Line &line2) { return ShapeToShapeDistanceVisitor{}(line1, line2); },
+        [](const Circle &circle1, const Circle &circle2) { return ShapeToShapeDistanceVisitor{}(circle1, circle2); },
+
+        [](const auto &, const auto &) -> std::optional<double> { return std::nullopt; }};
+
+    return std::visit(visitor, shape1, shape2);
 }
 
 }  // namespace geometry::queries
