@@ -305,19 +305,35 @@ template <>
 struct std::formatter<std::vector<geometry::Point2D>> {
     bool use_new_line = false;
 
-    constexpr auto parse(std::format_parse_context &ctx) const {
+    constexpr auto parse(std::format_parse_context &ctx) {
         auto it = ctx.begin();
-
-        /* ваш код здесь */
-
-        return it;
+        if (it == ctx.end() || *it == '}') {
+            return it;
+        }
+        auto spec_end = std::find(it, ctx.end(), '}');
+        use_new_line = std::string_view(it, spec_end) == "new_line";
+        return spec_end;
     }
 
     template <typename FormatContext>
-    auto format(const std::vector<geometry::Point2D> &v, FormatContext &ctx) const {
+    auto format(const std::vector<geometry::Point2D> &points, FormatContext &ctx) const {
+        auto out = ctx.out();
+        auto left_size = !points.empty() ? points.size() - 1 : 0;
+        auto left_points = points | std::views::take(left_size);
+        auto last_point = points | std::views::drop(left_size);
 
-        /* ваш код здесь */
-        return ctx.out();
+        if (use_new_line) {
+            out = std::format_to(out, "[\n");
+            std::ranges::for_each(left_points,
+                                  [&out](const auto &point) { out = std::format_to(out, "\t{},\n", point); });
+            std::ranges::for_each(last_point,
+                                  [&out](const auto &point) { out = std::format_to(out, "\t{}\n", point); });
+        } else {
+            out = std::format_to(out, "[");
+            std::ranges::for_each(left_points, [&out](const auto &point) { out = std::format_to(out, "{}, ", point); });
+            std::ranges::for_each(last_point, [&out](const auto &point) { out = std::format_to(out, "{}", point); });
+        }
+        return std::format_to(out, "]");
     }
 };
 
