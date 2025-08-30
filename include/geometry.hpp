@@ -231,14 +231,44 @@ protected:
 
 class Polygon {
 public:
-    /* ваш код здесь */
+    explicit Polygon(std::vector<Point2D> points) : points_(std::move(points)) {
+        if (points_.empty()) {
+            bounding_box_ = BoundingBox{0, 0, 0, 0};
+            return;
+        }
+        double min_x = points_[0].x;
+        double max_x = points_[0].x;
+        double min_y = points_[0].y;
+        double max_y = points_[0].y;
+        for (const auto &p : points_ | std::views::drop(1)) {
+            min_x = std::min(min_x, p.x);
+            max_x = std::max(max_x, p.x);
+            min_y = std::min(min_y, p.y);
+            max_y = std::max(max_y, p.y);
+        }
+        bounding_box_ = BoundingBox{min_x, min_y, max_x, max_y};
+    }
 
-    //
-    // Должны быть сделана по аналогии с RegularPolygon::Vertices
-    //
-    Point2D Center() { return {}; }
-    std::vector<Point2D> Vertices(size_t N = 30) const { return {}; }
-    Lines2DDyn Lines(size_t N = 100) const { return {}; }
+    [[nodiscard]] Point2D Center() const noexcept { return bounding_box_.Center(); }
+    [[nodiscard]] double Height() const noexcept { return bounding_box_.Height(); }
+    [[nodiscard]] BoundingBox BoundBox() const noexcept { return bounding_box_; }
+
+    [[nodiscard]] const std::vector<Point2D> &Vertices(size_t N = 30) const noexcept {
+        (void)N;
+        return points_;
+    }
+    [[nodiscard]] Lines2DDyn Lines(size_t N = 100) const {
+        (void)N;
+        if (points_.empty()) {
+            return {};
+        }
+        Lines2DDyn lines;
+        lines.Reserve(points_.size() + 1);
+        std::ranges::for_each(std::views::iota(size_t{}, points_.size() + 1) |
+                                  std::views::transform([this](int i) { return points_[i % points_.size()]; }),
+                              [&lines](const Point2D &p) { lines.PushBack(p); });
+        return lines;
+    }
 
 private:
     std::vector<Point2D> points_;

@@ -718,3 +718,89 @@ TEST(GeometryTest, Circle_zero_radius) {
     ASSERT_EQ(lines.x.size(), 5);
     ASSERT_EQ(lines.y.size(), 5);
 }
+
+TEST(GeometryTest, Polygon_ctor) {
+    std::vector<Point2D> points = {{0.0, 0.0}, {3.0, 0.0}, {0.0, 4.0}};
+    Polygon poly(points);
+
+    ASSERT_FALSE(poly.Vertices().empty());
+    ASSERT_EQ(poly.Vertices().size(), 3);
+}
+
+TEST(GeometryTest, Polygon_empty) {
+    std::vector<Point2D> points;
+    Polygon poly(points);
+
+    ASSERT_TRUE(poly.Vertices().empty());
+    ASSERT_TRUE(poly.Lines().x.empty());
+    ASSERT_TRUE(poly.Lines().y.empty());
+
+    BoundingBox bbox = poly.BoundBox();
+    ASSERT_DOUBLE_EQ(bbox.min_x, 0.0);
+    ASSERT_DOUBLE_EQ(bbox.min_y, 0.0);
+    ASSERT_DOUBLE_EQ(bbox.max_x, 0.0);
+    ASSERT_DOUBLE_EQ(bbox.max_y, 0.0);
+}
+
+TEST(GeometryTest, Polygon_BoundBox) {
+    std::vector<Point2D> points = {{1.0, 2.0}, {5.0, 3.0}, {2.0, 6.0}};
+    Polygon poly(points);
+
+    BoundingBox bbox = poly.BoundBox();
+    ASSERT_DOUBLE_EQ(bbox.min_x, 1.0);
+    ASSERT_DOUBLE_EQ(bbox.min_y, 2.0);
+    ASSERT_DOUBLE_EQ(bbox.max_x, 5.0);
+    ASSERT_DOUBLE_EQ(bbox.max_y, 6.0);
+}
+
+TEST(GeometryTest, Polygon_Center) {
+    std::vector<Point2D> points = {{1.0, 2.0}, {5.0, 2.0}, {3.0, 6.0}};
+    Polygon poly(points);
+
+    Point2D center = poly.Center();
+    ASSERT_DOUBLE_EQ(center.x, 3.0);
+    ASSERT_DOUBLE_EQ(center.y, 4.0);
+}
+
+TEST(GeometryTest, Polygon_Height) {
+    std::vector<Point2D> points = {{1.0, 2.0}, {5.0, 2.0}, {3.0, 6.0}};
+    Polygon poly(points);
+
+    ASSERT_DOUBLE_EQ(poly.Height(), 4.0);
+}
+
+TEST(GeometryTest, Polygon_Vertices) {
+    std::vector<Point2D> points = {{0.0, 0.0}, {3.0, 0.0}, {0.0, 4.0}};
+    Polygon poly(points);
+
+    const auto &vertices = poly.Vertices();
+    ASSERT_EQ(vertices.size(), 3);
+    ASSERT_DOUBLE_EQ(vertices[0].x, 0.0);
+    ASSERT_DOUBLE_EQ(vertices[0].y, 0.0);
+    ASSERT_DOUBLE_EQ(vertices[1].x, 3.0);
+    ASSERT_DOUBLE_EQ(vertices[1].y, 0.0);
+    ASSERT_DOUBLE_EQ(vertices[2].x, 0.0);
+    ASSERT_DOUBLE_EQ(vertices[2].y, 4.0);
+}
+
+TEST(GeometryTest, Polygon_Lines) {
+    std::vector<Point2D> points = {{0.0, 1.0}, {2.0, 3.0}, {4.0, 5.0}, {6.0, 7.0}, {8.0, 9.0}};
+    Polygon poly(points);
+
+    Lines2DDyn lines = poly.Lines();
+    ASSERT_EQ(lines.x.size(), 6);
+    ASSERT_EQ(lines.y.size(), 6);
+
+    ASSERT_DOUBLE_EQ(lines.x[0], 0.0);
+    ASSERT_DOUBLE_EQ(lines.y[0], 1.0);
+    ASSERT_DOUBLE_EQ(lines.x[1], 2.0);
+    ASSERT_DOUBLE_EQ(lines.y[1], 3.0);
+    ASSERT_DOUBLE_EQ(lines.x[2], 4.0);
+    ASSERT_DOUBLE_EQ(lines.y[2], 5.0);
+    ASSERT_DOUBLE_EQ(lines.x[3], 6.0);
+    ASSERT_DOUBLE_EQ(lines.y[3], 7.0);
+    ASSERT_DOUBLE_EQ(lines.x[4], 8.0);
+    ASSERT_DOUBLE_EQ(lines.y[4], 9.0);
+    ASSERT_DOUBLE_EQ(lines.x[5], 0.0);
+    ASSERT_DOUBLE_EQ(lines.y[5], 1.0);
+}
