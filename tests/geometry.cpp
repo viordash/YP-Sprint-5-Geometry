@@ -498,3 +498,123 @@ TEST(GeometryTest, Triangle_with_number_limits) {
         {0.0, 0.0}, {std::numeric_limits<double>::infinity(), 0.0}, {0.0, std::numeric_limits<double>::infinity()}};
     ASSERT_TRUE(std::isnan(triangle_inf.Area()));
 }
+
+TEST(GeometryTest, RegularPolygon_ctor) {
+    RegularPolygon poly({0.0, 0.0}, 5.0, 6);
+
+    ASSERT_DOUBLE_EQ(poly.Center().x, 0.0);
+    ASSERT_DOUBLE_EQ(poly.Center().y, 0.0);
+    ASSERT_DOUBLE_EQ(poly.radius, 5.0);
+    ASSERT_EQ(poly.sides, 6);
+}
+
+TEST(GeometryTest, RegularPolygon_Vertices) {
+    RegularPolygon square({0.0, 0.0}, 1.0, 4);
+
+    auto vertices = square.Vertices();
+    ASSERT_EQ(vertices.size(), 4);
+
+    ASSERT_NEAR(vertices[0].x, 1.0, 1e-10);
+    ASSERT_NEAR(vertices[0].y, 0.0, 1e-10);
+
+    ASSERT_NEAR(vertices[1].x, 0.0, 1e-10);
+    ASSERT_NEAR(vertices[1].y, 1.0, 1e-10);
+
+    ASSERT_NEAR(vertices[2].x, -1.0, 1e-10);
+    ASSERT_NEAR(vertices[2].y, 0.0, 1e-10);
+
+    ASSERT_NEAR(vertices[3].x, 0.0, 1e-10);
+    ASSERT_NEAR(vertices[3].y, -1.0, 1e-10);
+
+    RegularPolygon triangle({0.0, 0.0}, 1.0, 3);
+    auto triangle_vertices = triangle.Vertices();
+    ASSERT_EQ(triangle_vertices.size(), 3);
+    auto distance = triangle_vertices[0].DistanceTo(triangle.Center());
+    ASSERT_NEAR(distance, 1.0, 1e-10);
+
+    RegularPolygon pentagon({0.0, 0.0}, 1.0, 5);
+    auto pentagon_vertices = pentagon.Vertices();
+    ASSERT_EQ(pentagon_vertices.size(), 5);
+    distance = pentagon_vertices[0].DistanceTo(pentagon.Center());
+    ASSERT_NEAR(distance, 1.0, 1e-10);
+
+    RegularPolygon octagon({0.0, 0.0}, 1.0, 8);
+    auto octagon_vertices = octagon.Vertices();
+    ASSERT_EQ(octagon_vertices.size(), 8);
+    distance = octagon_vertices[0].DistanceTo(octagon.Center());
+    ASSERT_NEAR(distance, 1.0, 1e-10);
+
+    RegularPolygon circle({0.0, 0.0}, 1.0, 100);
+    auto circle_vertices = circle.Vertices();
+    ASSERT_EQ(circle_vertices.size(), 100);
+    distance = circle_vertices[0].DistanceTo(circle.Center());
+    ASSERT_NEAR(distance, 1.0, 1e-10);
+}
+
+TEST(GeometryTest, RegularPolygon_Lines) {
+    RegularPolygon square({0.0, 0.0}, 1.0, 4);
+
+    Lines2DDyn lines = square.Lines();
+    ASSERT_EQ(lines.x.size(), 5);
+    ASSERT_EQ(lines.y.size(), 5);
+
+    ASSERT_NEAR(lines.x[0], 1.0, 1e-10);
+    ASSERT_NEAR(lines.y[0], 0.0, 1e-10);
+
+    ASSERT_NEAR(lines.x[1], 0.0, 1e-10);
+    ASSERT_NEAR(lines.y[1], 1.0, 1e-10);
+
+    ASSERT_NEAR(lines.x[2], -1.0, 1e-10);
+    ASSERT_NEAR(lines.y[2], 0.0, 1e-10);
+
+    ASSERT_NEAR(lines.x[3], 0.0, 1e-10);
+    ASSERT_NEAR(lines.y[3], -1.0, 1e-10);
+
+    ASSERT_NEAR(lines.x[4], 1.0, 1e-10);
+    ASSERT_NEAR(lines.y[4], 0.0, 1e-10);
+}
+
+TEST(GeometryTest, RegularPolygon_BoundBox) {
+    RegularPolygon poly({2.0, 3.0}, 5.0, 6);
+
+    BoundingBox bbox = poly.BoundBox();
+    ASSERT_DOUBLE_EQ(bbox.min_x, -3.0);
+    ASSERT_DOUBLE_EQ(bbox.min_y, -2.0);
+    ASSERT_DOUBLE_EQ(bbox.max_x, 7.0);
+    ASSERT_DOUBLE_EQ(bbox.max_y, 8.0);
+}
+
+TEST(GeometryTest, RegularPolygon_Height) {
+    RegularPolygon poly({0.0, 0.0}, 5.0, 6);
+    ASSERT_DOUBLE_EQ(poly.Height(), 10.0);
+
+    RegularPolygon square({0.0, 0.0}, 3.0, 4);
+    ASSERT_DOUBLE_EQ(square.Height(), 6.0);
+}
+
+TEST(GeometryTest, RegularPolygon_zero_radius) {
+    RegularPolygon poly({0.0, 0.0}, 0.0, 4);
+    auto vertices = poly.Vertices();
+    ASSERT_EQ(vertices.size(), 4);
+
+    ASSERT_DOUBLE_EQ(vertices[0].x, 0.0);
+    ASSERT_DOUBLE_EQ(vertices[0].y, 0.0);
+
+    ASSERT_DOUBLE_EQ(vertices[1].x, 0.0);
+    ASSERT_DOUBLE_EQ(vertices[1].y, 0.0);
+
+    ASSERT_DOUBLE_EQ(vertices[2].x, 0.0);
+    ASSERT_DOUBLE_EQ(vertices[2].y, 0.0);
+
+    ASSERT_DOUBLE_EQ(vertices[3].x, 0.0);
+    ASSERT_DOUBLE_EQ(vertices[3].y, 0.0);
+}
+
+TEST(GeometryTest, RegularPolygon_zero_sides) {
+    RegularPolygon poly({0.0, 0.0}, 1.0, 0);
+
+    ASSERT_EQ(poly.Vertices().size(), 0);
+    
+    ASSERT_EQ(poly.Lines().x.size(), 0);
+    ASSERT_EQ(poly.Lines().y.size(), 0);
+}

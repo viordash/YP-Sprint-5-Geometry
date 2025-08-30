@@ -160,21 +160,36 @@ struct RegularPolygon {
     double radius;
     int sides;
 
-    constexpr RegularPolygon(Point2D center, double radius, int sides)
+    constexpr RegularPolygon(Point2D center, double radius, int sides) noexcept
         : center_p(center), radius(radius), sides(sides) {}
 
-    Point2D Center() { return {}; }
-    std::vector<Point2D> Vertices() {
-        std::vector<Point2D> points;
-        points.reserve(sides);
-
-        for (int i = 0; i < sides; ++i) {
-            const double angle = 2 * std::numbers::pi * i / sides;
-            points.emplace_back(center_p.x + radius * std::cos(angle), center_p.y + radius * std::sin(angle));
-        }
-        return points;
+    [[nodiscard]] Point2D Center() const noexcept { return center_p; }
+    [[nodiscard]] double Height() const noexcept { return BoundBox().Height(); }
+    [[nodiscard]] BoundingBox BoundBox() const noexcept {
+        return {center_p.x - radius, center_p.y - radius, center_p.x + radius, center_p.y + radius};
     }
-    Lines2DDyn Lines() const { return {}; }
+    [[nodiscard]] std::vector<Point2D> Vertices() const noexcept {
+        return std::views::iota(0, sides)                                       //
+               | std::views::transform([this](int i) { return GetVertex(i); })  //
+               | std::ranges::to<std::vector>();
+    }
+    [[nodiscard]] Lines2DDyn Lines() const {
+        if (sides <= 0) {
+            return {};
+        }
+        Lines2DDyn lines;
+        lines.Reserve(sides + 1);
+        std::ranges::for_each(std::views::iota(0, sides + 1) |
+                                  std::views::transform([this](int i) { return GetVertex(i); }),
+                              [&lines](const Point2D &p) { lines.PushBack(p); });
+        return lines;
+    }
+
+protected:
+    [[nodiscard]] Point2D GetVertex(int number) const {
+        const double angle = 2 * std::numbers::pi * (number % sides) / sides;
+        return {center_p.x + radius * std::cos(angle), center_p.y + radius * std::sin(angle)};
+    }
 };
 
 struct Circle {
