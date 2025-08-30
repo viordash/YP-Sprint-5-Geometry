@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <expected>
 #include <format>
 #include <numbers>
@@ -196,19 +197,36 @@ struct Circle {
     Point2D center_p;
     double radius;
 
-    constexpr Circle(Point2D center, double radius) : center_p(center), radius(radius) {}
+    constexpr Circle(Point2D center, double radius) noexcept : center_p(center), radius(radius) {}
 
-    BoundingBox BoundBox() {
+    [[nodiscard]] BoundingBox BoundBox() const noexcept {
         return {center_p.x - radius, center_p.y - radius, center_p.x + radius, center_p.y + radius};
     }
-    double Height() { return center_p.y + radius; }
-    Point2D Center() { return center_p; }
+    [[nodiscard]] double Height() const noexcept { return 2 * radius; }
+    [[nodiscard]] Point2D Center() const noexcept { return center_p; }
 
-    //
-    // Должны быть сделана по аналогии с RegularPolygon::Vertices
-    //
-    std::vector<Point2D> Vertices(size_t N = 30) { return {}; }
-    Lines2DDyn Lines(size_t N = 100) const { return {}; }
+    [[nodiscard]] std::vector<Point2D> Vertices(size_t N = 30) const {
+        return std::views::iota(size_t{}, N)                                          //
+               | std::views::transform([this, N](int i) { return GetVertex(i, N); })  //
+               | std::ranges::to<std::vector>();
+    }
+    [[nodiscard]] Lines2DDyn Lines(size_t N = 100) const {
+        if (N == 0) {
+            return {};
+        }
+        Lines2DDyn lines;
+        lines.Reserve(N + 1);
+        std::ranges::for_each(std::views::iota(size_t{}, N + 1) |
+                                  std::views::transform([this, N](int i) { return GetVertex(i, N); }),
+                              [&lines](const Point2D &p) { lines.PushBack(p); });
+        return lines;
+    }
+
+protected:
+    [[nodiscard]] Point2D GetVertex(int number, size_t sides) const {
+        const double angle = 2 * std::numbers::pi * (number % sides) / sides;
+        return {center_p.x + radius * std::cos(angle), center_p.y + radius * std::sin(angle)};
+    }
 };
 
 class Polygon {

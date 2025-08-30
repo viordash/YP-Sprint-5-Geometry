@@ -614,7 +614,107 @@ TEST(GeometryTest, RegularPolygon_zero_sides) {
     RegularPolygon poly({0.0, 0.0}, 1.0, 0);
 
     ASSERT_EQ(poly.Vertices().size(), 0);
-    
+
     ASSERT_EQ(poly.Lines().x.size(), 0);
     ASSERT_EQ(poly.Lines().y.size(), 0);
+}
+
+TEST(GeometryTest, Circle_ctor) {
+    Circle circle({2.0, 3.0}, 5.0);
+
+    ASSERT_DOUBLE_EQ(circle.Center().x, 2.0);
+    ASSERT_DOUBLE_EQ(circle.Center().y, 3.0);
+    ASSERT_DOUBLE_EQ(circle.radius, 5.0);
+}
+
+TEST(GeometryTest, Circle_BoundBox) {
+    Circle circle({2.0, 3.0}, 5.0);
+
+    BoundingBox bbox = circle.BoundBox();
+    ASSERT_DOUBLE_EQ(bbox.min_x, -3.0);
+    ASSERT_DOUBLE_EQ(bbox.min_y, -2.0);
+    ASSERT_DOUBLE_EQ(bbox.max_x, 7.0);
+    ASSERT_DOUBLE_EQ(bbox.max_y, 8.0);
+}
+
+TEST(GeometryTest, Circle_Height) {
+    Circle circle({0.0, 0.0}, 5.0);
+    ASSERT_DOUBLE_EQ(circle.Height(), 10.0);
+}
+
+TEST(GeometryTest, Circle_Center) {
+    Circle circle({2.0, 3.0}, 5.0);
+    Point2D center = circle.Center();
+
+    ASSERT_DOUBLE_EQ(center.x, 2.0);
+    ASSERT_DOUBLE_EQ(center.y, 3.0);
+}
+
+TEST(GeometryTest, Circle_Vertices) {
+    Circle circle({0.0, 0.0}, 1.0);
+
+    auto vertices_default = circle.Vertices();
+    ASSERT_EQ(vertices_default.size(), 30);
+
+    auto vertices_8 = circle.Vertices(8);
+    ASSERT_EQ(vertices_8.size(), 8);
+
+    for (const auto &vertex : vertices_8) {
+        ASSERT_NEAR(vertex.DistanceTo(circle.Center()), 1.0, 1e-10);
+    }
+
+    auto vertices_zero = circle.Vertices(0);
+    ASSERT_TRUE(vertices_zero.empty());
+}
+
+TEST(GeometryTest, Circle_Lines) {
+    Circle circle({0.0, 0.0}, 1.0);
+
+    Lines2DDyn lines_default = circle.Lines();
+    ASSERT_EQ(lines_default.x.size(), 101);
+    ASSERT_EQ(lines_default.y.size(), 101);
+
+    Lines2DDyn lines_4 = circle.Lines(4);
+    ASSERT_EQ(lines_4.x.size(), 5);
+    ASSERT_EQ(lines_4.y.size(), 5);
+
+    ASSERT_NEAR(lines_4.x[0], 1.0, 1e-10);
+    ASSERT_NEAR(lines_4.y[0], 0.0, 1e-10);
+
+    ASSERT_NEAR(lines_4.x[1], 0.0, 1e-10);
+    ASSERT_NEAR(lines_4.y[1], 1.0, 1e-10);
+
+    ASSERT_NEAR(lines_4.x[2], -1.0, 1e-10);
+    ASSERT_NEAR(lines_4.y[2], 0.0, 1e-10);
+
+    ASSERT_NEAR(lines_4.x[3], 0.0, 1e-10);
+    ASSERT_NEAR(lines_4.y[3], -1.0, 1e-10);
+
+    ASSERT_NEAR(lines_4.x[4], 1.0, 1e-10);
+    ASSERT_NEAR(lines_4.y[4], 0.0, 1e-10);
+
+    Lines2DDyn lines_zero = circle.Lines(0);
+    ASSERT_TRUE(lines_zero.x.empty());
+    ASSERT_TRUE(lines_zero.y.empty());
+}
+
+TEST(GeometryTest, Circle_zero_radius) {
+    Circle circle({0.0, 0.0}, 0.0);
+    auto vertices = circle.Vertices(4);
+
+    ASSERT_DOUBLE_EQ(vertices[0].x, 0.0);
+    ASSERT_DOUBLE_EQ(vertices[0].y, 0.0);
+
+    ASSERT_DOUBLE_EQ(vertices[1].x, 0.0);
+    ASSERT_DOUBLE_EQ(vertices[1].y, 0.0);
+
+    ASSERT_DOUBLE_EQ(vertices[2].x, 0.0);
+    ASSERT_DOUBLE_EQ(vertices[2].y, 0.0);
+
+    ASSERT_DOUBLE_EQ(vertices[3].x, 0.0);
+    ASSERT_DOUBLE_EQ(vertices[3].y, 0.0);
+
+    Lines2DDyn lines = circle.Lines(4);
+    ASSERT_EQ(lines.x.size(), 5);
+    ASSERT_EQ(lines.y.size(), 5);
 }
