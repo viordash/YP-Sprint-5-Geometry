@@ -63,16 +63,23 @@ private:
     std::uniform_int_distribution<int> type_dist;
 };
 
-std::vector<std::pair<Shape, Shape>> FindAllCollisions(std::span<const Shape> shapes) {
-    std::vector<std::pair<Shape, Shape>> collisions;
+inline std::vector<std::pair<Shape, Shape>> FindAllCollisions(std::span<const Shape> shapes) {
+    auto indices = std::views::iota(size_t{}, shapes.size());
+    auto combination = std::views::cartesian_product(indices, indices);
+    auto distinct_indices = combination | std::views::filter([](const auto &p) {
+                                auto [i, j] = p;
+                                return i < j;
+                            });
+    auto shapes_pair = distinct_indices | std::views::transform([&shapes](const auto &p) {
+                           auto [i, j] = p;
+                           return std::make_pair(shapes[i], shapes[j]);
+                       });
+    auto overlapped = shapes_pair | std::views::filter([](const auto &shape_pair) {
+                          const auto &[shape1, shape2] = shape_pair;
+                          return queries::BoundingBoxesOverlap(shape1, shape2);
+                      });
 
-    /*
-     * Используйте библиотеку ranges, чтобы найти все коллизии между фигурами методом BoundingBoxesOverlap
-     *
-     * Также используйте наиболее эффективный метод добавления объектов в collisions
-     */
-
-    return collisions;
+    return overlapped | std::ranges::to<std::vector>();
 }
 
 std::optional<size_t> FindHighestShape(std::span<const Shape> shapes) {
