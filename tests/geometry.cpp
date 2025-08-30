@@ -499,6 +499,87 @@ TEST(GeometryTest, Triangle_with_number_limits) {
     ASSERT_TRUE(std::isnan(triangle_inf.Area()));
 }
 
+TEST(GeometryTest, Rectangle_ctor) {
+    Point2D bottom_left(1.0, 2.0);
+    Rectangle rect{bottom_left, 10.0, 5.0};
+
+    ASSERT_DOUBLE_EQ(rect.bottom_left.x, 1.0);
+    ASSERT_DOUBLE_EQ(rect.bottom_left.y, 2.0);
+    ASSERT_DOUBLE_EQ(rect.width, 10.0);
+    ASSERT_DOUBLE_EQ(rect.height, 5.0);
+}
+
+TEST(GeometryTest, Rectangle_Area) {
+    Rectangle rect{{1.0, 2.0}, 10.0, 5.0};
+    ASSERT_DOUBLE_EQ(rect.Area(), 50.0);
+
+    Rectangle square{{0, 0}, 7.0, 7.0};
+    ASSERT_DOUBLE_EQ(square.Area(), 49.0);
+
+    Rectangle zero_width_rect{{1.0, 1.0}, 0.0, 5.0};
+    ASSERT_DOUBLE_EQ(zero_width_rect.Area(), 0.0);
+}
+
+TEST(GeometryTest, Rectangle_Height) {
+    Rectangle rect{{1.0, 2.0}, 10.0, 5.0};
+    ASSERT_DOUBLE_EQ(rect.Height(), 5.0);
+}
+
+TEST(GeometryTest, Rectangle_Center) {
+    Rectangle rect{{0.0, 0.0}, 10.0, 5.0};
+    Point2D center = rect.Center();
+    ASSERT_DOUBLE_EQ(center.x, 5.0);
+    ASSERT_DOUBLE_EQ(center.y, 2.5);
+
+    Rectangle rect_neg{{-10.0, -20.0}, 8.0, 4.0};
+    Point2D center_neg = rect_neg.Center();
+    ASSERT_DOUBLE_EQ(center_neg.x, -6.0);
+    ASSERT_DOUBLE_EQ(center_neg.y, -18.0);
+}
+
+TEST(GeometryTest, Rectangle_BoundBox) {
+    Rectangle rect{{1.0, 2.0}, 10.0, 5.0};
+    BoundingBox bbox = rect.BoundBox();
+    ASSERT_DOUBLE_EQ(bbox.min_x, 1.0);
+    ASSERT_DOUBLE_EQ(bbox.min_y, 2.0);
+    ASSERT_DOUBLE_EQ(bbox.max_x, 11.0);
+    ASSERT_DOUBLE_EQ(bbox.max_y, 7.0);
+}
+
+TEST(GeometryTest, Rectangle_Vertices) {
+    Rectangle rect{{1.0, 2.0}, 10.0, 5.0};
+    auto vertices = rect.Vertices();
+
+    ASSERT_EQ(vertices.size(), 4);
+    ASSERT_DOUBLE_EQ(vertices[0].x, 1.0);
+    ASSERT_DOUBLE_EQ(vertices[0].y, 2.0);
+    ASSERT_DOUBLE_EQ(vertices[1].x, 11.0);
+    ASSERT_DOUBLE_EQ(vertices[1].y, 2.0);
+    ASSERT_DOUBLE_EQ(vertices[2].x, 11.0);
+    ASSERT_DOUBLE_EQ(vertices[2].y, 7.0);
+    ASSERT_DOUBLE_EQ(vertices[3].x, 1.0);
+    ASSERT_DOUBLE_EQ(vertices[3].y, 7.0);
+}
+
+TEST(GeometryTest, Rectangle_Lines) {
+    Rectangle rect{{1.0, 2.0}, 10.0, 5.0};
+    auto lines = rect.Lines();
+
+    ASSERT_EQ(lines.x.size(), 5);
+    ASSERT_EQ(lines.y.size(), 5);
+
+    ASSERT_DOUBLE_EQ(lines.x[0], 1.0);
+    ASSERT_DOUBLE_EQ(lines.y[0], 2.0);
+    ASSERT_DOUBLE_EQ(lines.x[1], 11.0);
+    ASSERT_DOUBLE_EQ(lines.y[1], 2.0);
+    ASSERT_DOUBLE_EQ(lines.x[2], 11.0);
+    ASSERT_DOUBLE_EQ(lines.y[2], 7.0);
+    ASSERT_DOUBLE_EQ(lines.x[3], 1.0);
+    ASSERT_DOUBLE_EQ(lines.y[3], 7.0);
+    ASSERT_DOUBLE_EQ(lines.x[4], 1.0);
+    ASSERT_DOUBLE_EQ(lines.y[4], 2.0);
+}
+
 TEST(GeometryTest, RegularPolygon_ctor) {
     RegularPolygon poly({0.0, 0.0}, 5.0, 6);
 
