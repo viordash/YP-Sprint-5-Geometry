@@ -282,14 +282,6 @@ enum class GeometryError { Unsupported, NoIntersection, InvalidInput, DegenrateC
 template <typename T>
 using GeometryResult = std::expected<T, GeometryError>;
 
-/*
- * В коде везде используется ReplaceMe. Ваша задача - удалить ReplaceMe и везде вместо него
- использовать наиболее подходящий тип для решения задачи
- */
-struct ReplaceMe {
-    ReplaceMe(std::vector<Shape>) {}
-};
-
 }  // namespace geometry
 
 template <>
