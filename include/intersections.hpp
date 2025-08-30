@@ -10,6 +10,7 @@ namespace geometry::intersections {
  *
  * Требуется организовать возможность нахождения пересечений только для следующих комбинаций фигур:
  *    - Line   & Line
+ *    - Line & Circle (и Circle & Line)
  *    - Circle & Circle
  *
  * Для всех остальных требуется вернуть std::nullopt
