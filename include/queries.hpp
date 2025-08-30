@@ -132,21 +132,19 @@ inline double DistanceToPoint(const Shape &shape, const Point2D &point) {
 }
 
 inline BoundingBox GetBoundBox(const Shape &shape) {
-
-    /* ваш код здесь */
-    return {};
+    auto visitor = [](const auto &c_shape) { return c_shape.BoundBox(); };
+    return std::visit(visitor, shape);
 }
 
 inline double GetHeight(const Shape &shape) {
-
-    /* ваш код здесь */
-    return 0.0;
+    auto visitor = [](const auto &c_shape) { return c_shape.Height(); };
+    return std::visit(visitor, shape);
 }
 
 inline bool BoundingBoxesOverlap(const Shape &shape1, const Shape &shape2) {
-
-    /* ваш код здесь */
-    return false;
+    const BoundingBox bbox1 = GetBoundBox(shape1);
+    const BoundingBox bbox2 = GetBoundBox(shape2);
+    return bbox1.Overlaps(bbox2);
 }
 
 inline std::optional<double> DistanceBetweenShapes(const Shape &shape1, const Shape &shape2) {

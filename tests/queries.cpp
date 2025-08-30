@@ -130,3 +130,53 @@ TEST(QueriesTest, DistanceBetweenShapes_Unsupported) {
     auto dist3 = DistanceBetweenShapes(circle, rect);
     ASSERT_FALSE(dist3.has_value());
 }
+
+TEST(QueriesTest, GetBoundBox) {
+    Shape line_shape = Line{{-1, -2}, {3, 4}};
+    BoundingBox bbox_line = GetBoundBox(line_shape);
+    ASSERT_DOUBLE_EQ(bbox_line.min_x, -1.0);
+    ASSERT_DOUBLE_EQ(bbox_line.min_y, -2.0);
+    ASSERT_DOUBLE_EQ(bbox_line.max_x, 3.0);
+    ASSERT_DOUBLE_EQ(bbox_line.max_y, 4.0);
+
+    Shape circle_shape = Circle{{10, 20}, 5.0};
+    BoundingBox bbox_circle = GetBoundBox(circle_shape);
+    ASSERT_DOUBLE_EQ(bbox_circle.min_x, 5.0);
+    ASSERT_DOUBLE_EQ(bbox_circle.min_y, 15.0);
+    ASSERT_DOUBLE_EQ(bbox_circle.max_x, 15.0);
+    ASSERT_DOUBLE_EQ(bbox_circle.max_y, 25.0);
+
+    Shape rect_shape = Rectangle{{0, 0}, 10, 5};
+    BoundingBox bbox_rect = GetBoundBox(rect_shape);
+    ASSERT_DOUBLE_EQ(bbox_rect.min_x, 0.0);
+    ASSERT_DOUBLE_EQ(bbox_rect.min_y, 0.0);
+    ASSERT_DOUBLE_EQ(bbox_rect.max_x, 10.0);
+    ASSERT_DOUBLE_EQ(bbox_rect.max_y, 5.0);
+}
+
+TEST(QueriesTest, GetHeight) {
+    Shape triangle_shape = Triangle{{0, 0}, {4, 0}, {2, 5}};
+    ASSERT_DOUBLE_EQ(GetHeight(triangle_shape), 5.0);
+
+    Shape rect_shape = Rectangle{{10, 20}, 10, 15};
+    ASSERT_DOUBLE_EQ(GetHeight(rect_shape), 15.0);
+
+    Shape poly_shape = RegularPolygon{{0, 0}, 10.0, 6};
+    ASSERT_DOUBLE_EQ(GetHeight(poly_shape), 20.0);
+
+    Shape line_shape = Line{{-5, 2}, {5, 2}};
+    ASSERT_DOUBLE_EQ(GetHeight(line_shape), 0.0);
+}
+
+TEST(QueriesTest, BoundingBoxesOverlap) {
+    Shape rect_shape1 = Rectangle{{0, 0}, 5, 5};
+    Shape rect_shape2 = Rectangle{{10, 10}, 2, 2};
+    Shape circle_shape1 = Circle{{4, 4}, 2};
+    Shape circle_shape2 = Circle{{7, 2.5}, 2};
+
+    ASSERT_TRUE(BoundingBoxesOverlap(rect_shape1, circle_shape1));
+
+    ASSERT_FALSE(BoundingBoxesOverlap(rect_shape1, rect_shape2));
+
+    ASSERT_TRUE(BoundingBoxesOverlap(rect_shape1, circle_shape2));
+}
