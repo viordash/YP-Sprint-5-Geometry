@@ -57,3 +57,49 @@ TEST(ShapeUtilsTest, FindAllCollisions_tangent) {
     auto collisions = FindAllCollisions(shapes);
     ASSERT_EQ(collisions.size(), 1);
 }
+
+TEST(ShapeUtilsTest, FindHighestShape_no_shapes) {
+    std::vector<Shape> shapes;
+    auto highest_index = FindHighestShape(shapes);
+    ASSERT_FALSE(highest_index.has_value());
+}
+
+TEST(ShapeUtilsTest, FindHighestShape_single_shape) {
+    std::vector<Shape> shapes = {Rectangle{{0, 0}, 5, 5}};
+    auto highest_index = FindHighestShape(shapes);
+    ASSERT_TRUE(highest_index.has_value());
+    ASSERT_EQ(*highest_index, 0);
+}
+
+TEST(ShapeUtilsTest, FindHighestShape_simple_case) {
+    std::vector<Shape> shapes = {
+        Rectangle{{0, 0}, 2, 2},  //
+        Circle{{10, 10}, 5},      //
+        Line{{-5, -5}, {-4, 0}}   //
+    };
+    auto highest_index = FindHighestShape(shapes);
+    ASSERT_TRUE(highest_index.has_value());
+    ASSERT_EQ(*highest_index, 1);
+}
+
+TEST(ShapeUtilsTest, FindHighestShape_first_is_highest) {
+    std::vector<Shape> shapes = {
+        Rectangle{{0, 0}, 10, 20},  //
+        Circle{{10, 10}, 5},        //
+        Line{{-5, -5}, {-4, 0}}     //
+    };
+    auto highest_index = FindHighestShape(shapes);
+    ASSERT_TRUE(highest_index.has_value());
+    ASSERT_EQ(*highest_index, 0);
+}
+
+TEST(ShapeUtilsTest, FindHighestShape_multiple_highest) {
+    std::vector<Shape> shapes = {
+        Rectangle{{0, 0}, 10, 10},  //
+        Circle{{10, 10}, 1},        //
+        Line{{-5, -5}, {-4, 5}}     //
+    };
+    auto highest_index = FindHighestShape(shapes);
+    ASSERT_TRUE(highest_index.has_value());
+    ASSERT_EQ(*highest_index, 0);
+}

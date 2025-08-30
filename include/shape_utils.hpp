@@ -82,15 +82,16 @@ inline std::vector<std::pair<Shape, Shape>> FindAllCollisions(std::span<const Sh
     return overlapped | std::ranges::to<std::vector>();
 }
 
-std::optional<size_t> FindHighestShape(std::span<const Shape> shapes) {
+inline std::optional<size_t> FindHighestShape(std::span<const Shape> shapes) {
+    if (shapes.empty()) {
+        return std::nullopt;
+    }
 
-    /*
-     * Используйте библиотеку ranges, чтобы найти самую высокую фигуру
-     *
-     * Важно: использование ручной итерации по фигурам не разрешается
-     */
+    auto indices = std::views::iota(0u, shapes.size());
+    auto max_it =
+        std::ranges::max_element(indices, {}, [&shapes](size_t index) { return queries::GetHeight(shapes[index]); });
 
-    return std::nullopt;
+    return *max_it;
 }
 
 }  // namespace geometry::utils
