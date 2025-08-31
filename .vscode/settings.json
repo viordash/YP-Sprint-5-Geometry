@@ -3,10 +3,5 @@
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
     "clangd.path": "/usr/bin/clangd-19",
-    "clangd.arguments": [
-        "--compile-commands-dir=${workspaceFolder}/build"
-    ],
-    "[cpp]": {
-        "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
-    }
+    "clangd.arguments": [ "--compile-commands-dir=${workspaceFolder}/build" ]
 }
