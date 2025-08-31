@@ -97,41 +97,55 @@ inline GeometryResult<std::vector<DelaunayTriangle>> DelaunayTriangulation(std::
     // Создаём список для хранения текущей триангуляции и добавляем в него "Супер-треугольник",
     // содержащий внутри себя все точки
 
-    Point2D super1;
-    Point2D super2;
-    Point2D super3;
-    std::vector<DelaunayTriangle> triangulation;
+    if (points.size() < 3) {
+        return std::unexpected(GeometryError::InsufficientPoints);
+    }
 
-    /*
-    Далее
+    auto [min_x, max_x] = std::ranges::minmax(points | std::views::transform(&Point2D::x));
+    auto [min_y, max_y] = std::ranges::minmax(points | std::views::transform(&Point2D::y));
 
-    Цикл по всем точкам
+    const double dx = max_x - min_x;
+    const double dy = max_y - min_y;
+    const double delta_max = std::max(dx, dy);
+    const Point2D mid_point = {(min_x + max_x) / 2.0, (min_y + max_y) / 2.0};
 
-        Для каждой новой точки:
+    constexpr double scale_factor = 20.0;
+    const Point2D super_triangle[] = {{mid_point.x - scale_factor * delta_max, mid_point.y - scale_factor * delta_max},
+                                      {mid_point.x + scale_factor * delta_max, mid_point.y - scale_factor * delta_max},
+                                      {mid_point.x, mid_point.y + scale_factor * delta_max}};
 
-            В цикле
-                Находятся все "плохие" треугольники (из текущей триангуляции), в чьи описанные окружности входит эта
-    точка (ContainsPoint); "плохими" называются треугольники, нарушающие условие Делоне (внутри окружности не должно
-    быть других точек);
+    std::vector<DelaunayTriangle> triangulation{{super_triangle[0], super_triangle[1], super_triangle[2]}};
 
-                Для всех рёбер этих треугольников формируется множество polygon, причём:
-                    - Если ребро ещё не встречалось - оно добавляется в polygon.
-                    - Если ребро встречается второй раз - оно удаляется из polygon.
+    for (const auto &point : points) {
+        auto bad_triangles = triangulation |
+                             std::views::filter([&](const auto &tri) { return tri.ContainsPoint(point); }) |
+                             std::ranges::to<std::vector>();
 
-            Получившееся множество polygon - это граница "дырки" (polygonal hole), которую нужно заполнить новыми
-    треугольниками
+        std::set<Edge> hole_edges;
+        for (const auto &tri : bad_triangles) {
+            for (const auto &edge : std::array{Edge{tri.a, tri.b}, Edge{tri.b, tri.c}, Edge{tri.c, tri.a}}) {
+                if (hole_edges.contains(edge)) {
+                    hole_edges.erase(edge);
+                } else {
+                    hole_edges.insert(edge);
+                }
+            }
+        }
 
-            Теперь требуется удалить из текущей триангуляции все плохие треугольники: cur_triangulation.erase(
-    bad_triangles.contains(*it) )
+        std::erase_if(triangulation, [&](const auto &tri) { return tri.ContainsPoint(point); });
 
-            Для каждой границы "дырки" (polygonal hole) создаются новые треугольники с новой точкой: { ТочкаРебра1,
-    ТочкаРебра2, НоваяТочка }.
+        for (const auto &edge : hole_edges) {
+            triangulation.emplace_back(edge.p1, edge.p2, point);
+        }
+    }
 
-    Конец цикла
+    std::erase_if(triangulation, [&](const auto &tri) {
+        return std::ranges::any_of(super_triangle, [&](const auto &super_vertex) {
+            return std::ranges::any_of(tri.vertices(), [&](const auto &vertex) { return vertex == super_vertex; });
+        });
+    });
 
-    Удаляем все треугольники, включающие вершины супер-треугольника.
-    */
-    return std::unexpected(GeometryError::Unsupported);
+    return triangulation;
 }
 }  // namespace geometry::triangulation
 
