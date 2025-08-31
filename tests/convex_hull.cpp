@@ -1,6 +1,5 @@
 #include "convex_hull.hpp"
 #include "geometry.hpp"
-#include <algorithm>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <vector>
