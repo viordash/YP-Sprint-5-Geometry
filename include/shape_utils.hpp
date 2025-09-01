@@ -64,7 +64,7 @@ private:
 };
 
 inline std::vector<std::pair<Shape, Shape>> FindAllCollisions(std::span<const Shape> shapes) {
-    auto indices = std::views::iota(size_t{}, shapes.size());
+    auto indices = std::views::iota(0u, shapes.size());
     auto combination = std::views::cartesian_product(indices, indices);
     auto distinct_indices = combination | std::views::filter([](const auto &p) {
                                 auto [i, j] = p;
