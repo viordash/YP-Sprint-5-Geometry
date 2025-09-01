@@ -27,10 +27,11 @@ struct PointToShapeDistanceVisitor {
     explicit PointToShapeDistanceVisitor(const Point2D &p) : point(p) {}
 
     [[nodiscard]] double operator()(const Line &line) const {
+        const double epsilon = 1e-9;
         const Point2D ab = line.end - line.start;
         const Point2D ap = point - line.start;
 
-        bool line_is_point = ab.Dot(ab) < 1e-9;
+        bool line_is_point = ab.Dot(ab) < epsilon;
         if (line_is_point) {
             return ap.Length();
         }
