@@ -206,7 +206,7 @@ struct Circle {
     [[nodiscard]] Point2D Center() const noexcept { return center_p; }
 
     [[nodiscard]] std::vector<Point2D> Vertices(size_t N = 30) const {
-        return std::views::iota(size_t{}, N)                                          //
+        return std::views::iota(0u, N)                                          //
                | std::views::transform([this, N](int i) { return GetVertex(i, N); })  //
                | std::ranges::to<std::vector>();
     }
@@ -216,7 +216,7 @@ struct Circle {
         }
         Lines2DDyn lines;
         lines.Reserve(N + 1);
-        std::ranges::for_each(std::views::iota(size_t{}, N + 1) |
+        std::ranges::for_each(std::views::iota(0u, N + 1) |
                                   std::views::transform([this, N](int i) { return GetVertex(i, N); }),
                               [&lines](const Point2D &p) { lines.PushBack(p); });
         return lines;
@@ -264,7 +264,7 @@ public:
         }
         Lines2DDyn lines;
         lines.Reserve(points_.size() + 1);
-        std::ranges::for_each(std::views::iota(size_t{}, points_.size() + 1) |
+        std::ranges::for_each(std::views::iota(0u, points_.size() + 1) |
                                   std::views::transform([this](int i) { return points_[i % points_.size()]; }),
                               [&lines](const Point2D &p) { lines.PushBack(p); });
         return lines;
