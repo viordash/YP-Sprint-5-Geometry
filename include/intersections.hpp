@@ -16,6 +16,8 @@ namespace geometry::intersections {
  * Для всех остальных требуется вернуть std::nullopt
  */
 class IntersectionVisitor {
+    const double epsilon = 1e-9;
+
 public:
     [[nodiscard]] std::optional<Point2D> operator()(const Line &line1, const Line &line2) const {
         const Point2D p1 = line1.start;
@@ -25,7 +27,7 @@ public:
 
         const double cross = d1.Cross(d2);
 
-        bool parallel = std::abs(cross) < 1e-9;
+        bool parallel = std::abs(cross) < epsilon;
         if (parallel) {
             return std::nullopt;
         }
@@ -47,13 +49,13 @@ public:
         const double dist_sq = diff.Dot(diff);
         const double dist = std::sqrt(dist_sq);
 
-        if (dist > r1 + r2 + 1e-9 || dist < std::abs(r1 - r2) - 1e-9) {
+        if (dist > r1 + r2 + epsilon || dist < std::abs(r1 - r2) - epsilon) {
             return std::nullopt;
         }
 
         const double a = (r1 * r1 - r2 * r2 + dist_sq) / (2.0 * dist);
         const double h_sq = r1 * r1 - a * a;
-        if (h_sq < -1e-9) {
+        if (h_sq < -epsilon) {
             return std::nullopt;
         }
         const double h = h_sq > 0 ? std::sqrt(h_sq) : 0.0;
@@ -68,16 +70,16 @@ public:
         const Point2D f = line.start - circle.center_p;
 
         const double a = d.Dot(d);
-        if (a < 1e-9) {
-            return (f.Dot(f) - circle.radius * circle.radius < 1e-9) ? std::optional<Point2D>(line.start)
-                                                                     : std::nullopt;
+        if (a < epsilon) {
+            return (f.Dot(f) - circle.radius * circle.radius < epsilon) ? std::optional<Point2D>(line.start)
+                                                                        : std::nullopt;
         }
 
         const double b = 2.0 * f.Dot(d);
         const double c = f.Dot(f) - circle.radius * circle.radius;
         double discriminant = b * b - 4 * a * c;
 
-        if (discriminant < -1e-9) {
+        if (discriminant < -epsilon) {
             return std::nullopt;
         }
         discriminant = std::max(0.0, discriminant);
